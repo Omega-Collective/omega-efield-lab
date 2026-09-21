@@ -48,8 +48,7 @@ models/                      Exported models the viewer loads
 
 ## Reproducing a model
 
-You need SimNIBS 4.6 and a head mesh — the `ernie` example dataset that ships with
-SimNIBS works, and is what the published model uses.
+You need SimNIBS 4.6 and a head mesh.
 
 ```bash
 simnibs_python tools/compute_leadfield.py path/to/ernie.msh -o leadfield_ernie
@@ -103,13 +102,13 @@ On Windows the `tools/*.bat` scripts find SimNIBS on their own; drag a head mesh
 ## Tests
 
 ```bash
-# formato e invariantes fisicas de los modelos exportados
+# format and physical invariants of the exported models
 pip install numpy pytest && python -m pytest tests -v
 
-# aritmetica del visor, sin navegador
+# viewfinder arithmetic, without a viewfinder
 node --test tests/viewer.test.mjs
 
-# la pagina carga y calcula un montaje, en un navegador real
+# the page loads and calculates a layout in a real browser
 npm install --no-save playwright && npx playwright install chromium
 node tests/smoke.mjs
 ```
