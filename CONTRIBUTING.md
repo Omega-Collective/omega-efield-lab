@@ -36,14 +36,14 @@ without discussing it first.
 ## Running the tests
 
 ```bash
-# formato e invariantes fisicas de los modelos exportados
+# format and physical invariants of the exported models
 pip install numpy pytest
 python -m pytest tests -v
 
-# aritmetica del visor, sin navegador
+# viewfinder arithmetic, without a viewfinder
 node --test tests/viewer.test.mjs
 
-# la pagina carga y calcula un montaje, en un navegador real
+# the page loads and calculates a montage in a real browser
 npm install --no-save playwright && npx playwright install chromium
 node tests/smoke.mjs
 ```
