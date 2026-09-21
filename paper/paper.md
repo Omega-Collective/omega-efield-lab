@@ -14,7 +14,7 @@ authors:
 affiliations:
   - name: Omega Dynamics
     index: 1
-date: 20 September 2026
+date: 21 September 2026
 bibliography: paper.bib
 ---
 

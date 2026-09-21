@@ -6,6 +6,7 @@ server: the computation runs in the page.
 
 [![tests](https://github.com/Omega-Collective/omega-efield-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/Omega-Collective/omega-efield-lab/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![DOI](https://zenodo.org/badge/1379071064.svg)](https://doi.org/10.5281/zenodo.22867607)
 
 **Live: [omegadym.com/efield-lab](https://omegadym.com/efield-lab/)** ·
 Method and limits: [omegadym.com/efield](https://omegadym.com/efield)
@@ -146,7 +147,15 @@ This is not a medical device and does not replace a subject-specific simulation.
 
 ## Citing
 
-See [`CITATION.cff`](CITATION.cff). Please also cite SimNIBS:
+> Jones, S. R. (2026). *E-Field Lab: browser-based simulation of the electric field in
+> transcranial electric stimulation* (v1.0.0). Omega Dynamics.
+> <https://doi.org/10.5281/zenodo.22867607>
+
+That DOI always resolves to the latest release; cite
+[10.5281/zenodo.22867608](https://doi.org/10.5281/zenodo.22867608) to pin v1.0.0.
+Machine-readable metadata is in [`CITATION.cff`](CITATION.cff).
+
+Please also cite SimNIBS, which solves the physics:
 
 > Thielscher, A., Antunes, A., & Saturnino, G. B. (2015). Field modeling for transcranial
 > magnetic stimulation: a useful tool to understand the physiological effects of TMS? *37th Annual International Conference of the IEEE EMBC.*

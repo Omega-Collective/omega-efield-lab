@@ -21,7 +21,15 @@ keywords:
   - neuromodulation
 license: MIT
 version: "1.0.0"
-date-released: "2026-09-20"
+date-released: "2026-09-21"
+doi: "10.5281/zenodo.22867607"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22867607"
+    description: "Concept DOI: always resolves to the latest version"
+  - type: doi
+    value: "10.5281/zenodo.22867608"
+    description: "DOI for version 1.0.0"
 references:
   - type: conference-paper
     title: "Field modeling for transcranial magnetic stimulation: a useful tool to understand the physiological effects of TMS?"
