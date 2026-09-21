@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omega E-Field Lab</title>
+    <meta name="description" content="Explore the electric field induced in the cortex by transcranial electric stimulation montages, in real time, in the browser.">
+    <link rel="icon" type="image/png" href="docs/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/lab.css">
+    <script type="importmap">
+        { "imports": { "three": "./vendor/three.module.min.js" } }
+    </script>
+</head>
+
+<body>
+    <div class="app">
+        <aside>
+            <div class="brand">
+                <a href="https://omegadym.com">OMEGA</a>
+                <span>E-Field Lab</span>
+            </div>
+
+            <div>
+                <h1>Transcranial electric stimulation</h1>
+                <p class="lede">Pick a montage and see the field it induces on the cortex. Click an electrode to assign it. Drag to rotate freely, right-drag to pan, scroll to zoom.</p>
+            </div>
+
+            <p class="warning" id="synthetic-warning" hidden>Synthetic test model: the geometry and the field are approximations for development, not anatomy.</p>
+
+            <div class="group" id="model-group" hidden>
+                <span class="label">Head model<span class="help" data-tip="Each model is a separate leadfield: a different head, a different electrode size, or both. The electrode geometry is fixed when the leadfield is computed, so switching electrode size means switching model.">?</span></span>
+                <select id="model"></select>
+            </div>
+
+            <div class="group">
+                <span class="label">Montage<span class="help" data-tip="Pick a preset, or click electrodes in the 3D view to build your own. Anodes carry current into the head, cathodes carry it out. The currents always sum to zero.">?</span></span>
+                <select id="preset">
+                    <option value="">Custom</option>
+                </select>
+                <div class="segmented tool">
+                    <input type="radio" name="tool" id="tool-anode" value="anode" checked>
+                    <label for="tool-anode">Anode</label>
+                    <input type="radio" name="tool" id="tool-cathode" value="cathode">
+                    <label for="tool-cathode">Cathode</label>
+                </div>
+                <p class="montage" id="montage"></p>
+                <div class="row">
+                    <label for="current">Total current<span class="help" data-tip="Current delivered by the anodes, split evenly among them, and returned through the cathodes. Typical tDCS studies use 1 to 2 mA.">?</span></label>
+                    <input type="number" id="current" min="0.1" max="4" step="0.1" value="2">
+                    <span class="hint">mA</span>
+                    <button id="clear" type="button">Clear</button>
+                </div>
+            </div>
+
+            <div class="group">
+                <span class="label">Display<span class="help" data-tip="Magnitude is how strong the field is regardless of direction. Normal is the component perpendicular to the cortical surface, positive when the field points into the cortex, which is the component most related to neuronal polarisation.">?</span></span>
+                <div class="segmented">
+                    <input type="radio" name="mode" id="mode-magnitude" value="magnitude" checked>
+                    <label for="mode-magnitude">Magnitude</label>
+                    <input type="radio" name="mode" id="mode-normal" value="normal">
+                    <label for="mode-normal">Normal</label>
+                </div>
+                <div class="scale-row">
+                    <span id="scale-min">0</span>
+                    <span id="colorbar"></span>
+                    <span id="scale-max"></span>
+                </div>
+                <div class="row">
+                    <label for="autoscale"><input type="checkbox" id="autoscale" checked> Auto scale<span class="help" data-tip="Auto scale fits the colour range to the current montage. Turn it off and set a fixed value to compare two montages with the same colours.">?</span></label>
+                    <input type="number" id="scale" min="0.01" step="0.05" disabled>
+                </div>
+            </div>
+
+            <div class="group">
+                <span class="label">Field on the cortex</span>
+                <dl class="stats">
+                    <div class="stat">
+                        <dt>Peak (99th pct)<span class="help" data-tip="99th percentile of the field magnitude over the cortex. The absolute maximum is dominated by a handful of vertices and is unstable, so the percentile is what gets reported.">?</span></dt>
+                        <dd id="peak">—</dd>
+                    </div>
+                    <div class="stat">
+                        <dt>Median<span class="help" data-tip="Median field over the whole cortical surface. Together with the peak it tells you whether a montage is focal or spread out.">?</span></dt>
+                        <dd id="median">—</dd>
+                    </div>
+                    <div class="stat">
+                        <dt>Under cursor</dt>
+                        <dd id="hover-value">—</dd>
+                    </div>
+                    <div class="stat">
+                        <dt>Cortex above half of peak<span class="help" data-tip="Share of the cortical surface where the field is at least half the peak. Smaller means more focal. Compare HD 4x1 against a classic two-electrode montage to see the difference.">?</span></dt>
+                        <dd id="focality">—</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="group">
+                <span class="label">View</span>
+                <div class="views">
+                    <button type="button" data-view="left">Left</button>
+                    <button type="button" data-view="right">Right</button>
+                    <button type="button" data-view="top">Top</button>
+                    <button type="button" data-view="front">Front</button>
+                    <button type="button" data-view="back">Back</button>
+                    <button type="button" data-view="bottom">Bottom</button>
+                </div>
+                <button type="button" id="recentre" class="wide-button">Centre on model<span class="help" data-tip="Brings the model back to the middle of the view without changing the angle you are looking from. Useful before saving a figure.">?</span></button>
+                <div class="row">
+                    <label for="overlay"><input type="checkbox" id="overlay" checked> Overlay on canvas<span class="help" data-tip="Shows the montage, the colour scale and the metrics on top of the 3D view. What you see is what gets saved: turn it off for a clean render.">?</span></label>
+                </div>
+                <button type="button" id="capture" class="wide-button">Save figure (PNG)</button>
+            </div>
+
+            <div class="meta">
+                <span>Model: <b id="model-name"></b></span>
+                <span>Reference electrode: <b id="reference"></b></span>
+                <span>Electrodes: <b id="electrode-spec"></b><span class="help" data-tip="The electrode size is baked into the leadfield when it is computed, not chosen here. Current density, and therefore the field, depends on the contact area, so a montage with larger pads spreads the same current over more scalp. The dots in the 3D view are only markers at the centres, drawn at a fixed size.">?</span></span>
+                <span>Surface: <b id="vertex-count"></b> vertices</span>
+            </div>
+
+            <footer>
+                Linear superposition of a precomputed leadfield. Values are indicative and not a substitute for a subject-specific simulation.
+                <span class="footer-links"><a href="https://omegadym.com/efield">Method and limits</a></span>
+            </footer>
+        </aside>
+
+        <main>
+            <canvas id="view"></canvas>
+            <div id="cursor-chip" hidden></div>
+            <div id="hud">
+                <div class="hud-block">
+                    <span class="hud-title" id="hud-montage"></span>
+                    <span class="hud-sub" id="hud-sub"></span>
+                    <span class="hud-sub" id="hud-metrics"></span>
+                </div>
+                <div class="hud-block">
+                    <div class="hud-scale">
+                        <span id="hud-min">0</span>
+                        <span id="hud-bar"></span>
+                        <span id="hud-max"></span>
+                    </div>
+                    <span class="hud-sub" id="hud-view" style="text-align: right;"></span>
+                </div>
+            </div>
+            <div id="loading">Loading model…</div>
+        </main>
+    </div>
+
+    <div id="help-tip" hidden></div>
+    <script type="module" src="js/app.js"></script>
+</body>
+
+</html>
