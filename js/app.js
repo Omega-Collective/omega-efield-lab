@@ -163,8 +163,13 @@ function buildControls() {
     });
 
     el('current').addEventListener('input', e => {
-        state.current = Number(e.target.value);
+        const value = Number(e.target.value);
+        if (!(value > 0)) return;
+        state.current = clampCurrent(value);
         recompute();
+    });
+    el('current').addEventListener('change', e => {
+        e.target.value = state.current;
     });
     for (const input of document.querySelectorAll('input[name="tool"]')) {
         input.addEventListener('change', () => { state.tool = input.value; });
@@ -181,8 +186,13 @@ function buildControls() {
         recompute();
     });
     el('scale').addEventListener('input', e => {
-        state.scale = Number(e.target.value);
+        const value = Number(e.target.value);
+        if (!(value > 0)) return;
+        state.scale = value;
         recompute();
+    });
+    el('scale').addEventListener('change', e => {
+        if (!(Number(e.target.value) > 0)) e.target.value = state.scale.toFixed(3);
     });
     for (const button of document.querySelectorAll('[data-view]')) {
         button.addEventListener('click', () => setView(button.dataset.view));
@@ -241,6 +251,11 @@ async function buildModelPicker(current) {
         location.href = `${location.pathname}?model=${encodeURIComponent(picker.value)}${location.hash}`;
     });
     el('model-group').hidden = false;
+}
+
+function clampCurrent(value) {
+    const input = el('current');
+    return Math.min(Number(input.max), Math.max(Number(input.min), value));
 }
 
 function currents() {
@@ -396,7 +411,8 @@ function readHash() {
     const known = name => state.model.index.has(name);
     if (hash.get('a')) state.anodes = new Set(hash.get('a').split('.').filter(known));
     if (hash.get('c')) state.cathodes = new Set(hash.get('c').split('.').filter(known));
-    if (hash.get('i')) state.current = Number(hash.get('i')) || state.current;
+    const current = Number(hash.get('i'));
+    if (current > 0) state.current = clampCurrent(current);
     if (hash.get('v') === 'normal') state.mode = 'normal';
     el('current').value = state.current;
     for (const input of document.querySelectorAll('input[name="mode"]')) {
