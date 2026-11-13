@@ -147,7 +147,7 @@ This is not a medical device and does not replace a subject-specific simulation.
 ## Citing
 
 > Jones, S. R. (2026). *E-Field Lab: browser-based simulation of the electric field in
-> transcranial electric stimulation* (v1.0.0). Omega Dynamics.
+> transcranial electric stimulation* (v1.0.0). Haldane Genomics.
 > <https://doi.org/10.5281/zenodo.22867607>
 
 That DOI always resolves to the latest release; cite
@@ -167,4 +167,4 @@ SimNIBS's own terms.
 
 ---
 
-Built at [Omega Dynamics](https://omegadym.com).
+Built at [Haldane Genomics](https://haldanegenomics.com).
